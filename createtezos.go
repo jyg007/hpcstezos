@@ -30,14 +30,13 @@ import (
 
 	"crypto/sha256"
 
-    "golang.org/x/crypto/blake2b"
+        "golang.org/x/crypto/blake2b"
 
-    "github.com/btcsuite/btcutil/base58"
+        "github.com/btcsuite/btcutil/base58"
 
 	"crypto/x509/pkix"
 	"math/big"
 	"errors"
-
 )
 
 
@@ -73,14 +72,17 @@ const (
         tzEd25519EncryptedSeed        = "075a3cb329" // edesk
         tzSecp256k1EncryptedSecretKey = "09edf1ae96" // spesk
         tzP256EncryptedSecretKey      = "09303973ab" // p2esk
+
+
 )
+
 
 // GetTzCurveBytes used to format keys used by default client software
 func getTzPrefixBytes(algo *asn1.ObjectIdentifier) ([]byte, []byte, []byte) {
 
-  		oidPrivateKeyEd25519   := asn1.ObjectIdentifier{1, 3, 101, 112}
-	    oidPrivateKeyP256      := asn1.ObjectIdentifier{1, 2, 840, 10045, 3, 1, 7}
-		oidPrivateKeySecp256k1 := asn1.ObjectIdentifier{1, 3, 132, 0, 10}
+        oidPrivateKeyEd25519   := asn1.ObjectIdentifier{1, 3, 101, 112}
+        oidPrivateKeyP256      := asn1.ObjectIdentifier{1, 2, 840, 10045, 3, 1, 7}
+        oidPrivateKeySecp256k1 := asn1.ObjectIdentifier{1, 3, 132, 0, 10}
 
         if algo.Equal(oidPrivateKeySecp256k1) {
                 pkh, _ := hex.DecodeString(tzSecp256k1PublicKeyhash)
@@ -147,19 +149,19 @@ var cryptoClient pb.CryptoClient
 
 func main() {
 
-    cryptoClient = getGrep11Server()
+        cryptoClient = getGrep11Server()
    	defer disconnectGrep11Server() 
 
 
-	ecParameters, err := asn1.Marshal(asn1.ObjectIdentifier{1, 2, 840, 10045, 3, 1, 7})  //prime256v1
+        ecParameters, err := asn1.Marshal(asn1.ObjectIdentifier{1, 2, 840, 10045, 3, 1, 7})  //prime256v1
         if err != nil {
                 panic(fmt.Errorf("Unable to encode parameter OID: %s", err))
-     }
+        }
 
-	publicKeyTemplate := ep11.EP11Attributes{
+        publicKeyTemplate := ep11.EP11Attributes{
 		ep11.CKA_VERIFY:         true,
 		ep11.CKA_EC_PARAMS: ecParameters,
-	}
+        }
 	privateKeyTemplate := ep11.EP11Attributes{
 		ep11.CKA_PRIVATE:     true,
 		ep11.CKA_SENSITIVE:   true,
@@ -176,39 +178,40 @@ func main() {
 		panic(fmt.Errorf("GenerateKeyPair error: %s", err))
 	}
 
-    fsk,_ := os.Create("sk.hex")
-    fsk.Write([]byte(hex.EncodeToString(generateKeyPairResponse.PrivKey.KeyBlobs[0])))
-    defer fsk.Close()
+        fsk,_ := os.Create("sk.hex")
+        fsk.Write([]byte(hex.EncodeToString(generateKeyPairResponse.PrivKey.KeyBlobs[0])))
+        defer fsk.Close()
 
-    f, _ :=os.Create("pubkey.der")
-    f.Write(generateKeyPairResponse.PubKey.Attributes[ep11.CKA_PUBLIC_KEY_INFO].GetAttributeB())
- 	defer f.Close()
+        f, _ :=os.Create("pubkey.der")
+        f.Write(generateKeyPairResponse.PubKey.Attributes[ep11.CKA_PUBLIC_KEY_INFO].GetAttributeB())
+        defer f.Close()
 
- 	//openssl ec -inform DER -in  pubkey.der -outform PEM -out pubkey.pem -pubin
+        //openssl ec -inform DER -in  pubkey.der -outform PEM -out pubkey.pem -pubin
 
 
-// ParseAsn1Pubkey parses DER encoded bytes using the ASN.1
-// Public Key structure and returns our public key material
-// Compare to: x509.ParsePKIXPublicKey()
+        // ParseAsn1Pubkey parses DER encoded bytes using the ASN.1
+        // Public Key structure and returns our public key material
+        // Compare to: x509.ParsePKIXPublicKey()
 
-    var pubKey subjectPublicKeyInfo
-      // Parse the public key
+        var pubKey subjectPublicKeyInfo
+        // Parse the public key
         if rest, err := asn1.Unmarshal(generateKeyPairResponse.PubKey.Attributes[ep11.CKA_PUBLIC_KEY_INFO].GetAttributeB(), &pubKey); err != nil {
                 errors.New("error")
         } else if len(rest) != 0 {
                 errors.New("x509: trailing data after ASN.1 of public-key")
         }
         // Parse the algo
-        paramsData := pubKey.Algorithm.Parameters.FullBytes
-        namedCurveOID := new(asn1.ObjectIdentifier)
-        asn1.Unmarshal(paramsData, namedCurveOID)
+        //paramsData := pubKey.Algorithm.Parameters.FullBytes
+        //namedCurveOID := new(asn1.ObjectIdentifier)
+        //asn1.Unmarshal(paramsData, namedCurveOID)
 
        
-    PublicKey:= getCompressedPubkey(pubKey.PublicKey.Bytes)
+        PublicKey:= getCompressedPubkey(pubKey.PublicKey.Bytes)
 
- 	//fmt.Print(getTzPublicKey(&asn1.ObjectIdentifier{1, 2, 840, 10045, 3, 1, 7},generateKeyPairResponse.PubKey.Attributes[ep11.CKA_PUBLIC_KEY_INFO].GetAttributeB()))
+        //fmt.Print(getTzPublicKey(&asn1.ObjectIdentifier{1, 2, 840, 10045, 3, 1, 7},generateKeyPairResponse.PubKey.Attributes[ep11.CKA_PUBLIC_KEY_INFO].GetAttributeB()))
 
-	fmt.Println(getTzPublicKey(&asn1.ObjectIdentifier{1, 2, 840, 10045, 3, 1, 7},PublicKey))
-	fmt.Println(getTzPublicKeyHash(&asn1.ObjectIdentifier{1, 2, 840, 10045, 3, 1, 7},PublicKey))
+        fmt.Println(getTzPublicKey(&asn1.ObjectIdentifier{1, 2, 840, 10045, 3, 1, 7},PublicKey))
+ 
+        fmt.Println(getTzPublicKeyHash(&asn1.ObjectIdentifier{1, 2, 840, 10045, 3, 1, 7},PublicKey))
 
 }
