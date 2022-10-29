@@ -39,15 +39,12 @@ import (
 	"errors"
 )
 
-
 // publicKey is an ASN.1 encoded Subject Public Key Info, defined here:
 // https://tools.ietf.org/html/rfc5280#section-4.1.2.7
 type subjectPublicKeyInfo struct {
         Algorithm pkix.AlgorithmIdentifier
         PublicKey asn1.BitString
 }
-
-
 
 // Tezos Constants from:
 // https://gitlab.com/tezos/tezos/blob/master/src/lib_crypto/base58.ml
@@ -72,8 +69,6 @@ const (
         tzEd25519EncryptedSeed        = "075a3cb329" // edesk
         tzSecp256k1EncryptedSecretKey = "09edf1ae96" // spesk
         tzP256EncryptedSecretKey      = "09303973ab" // p2esk
-
-
 )
 
 
