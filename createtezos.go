@@ -147,7 +147,6 @@ func main() {
         cryptoClient = getGrep11Server()
    	defer disconnectGrep11Server() 
 
-
         ecParameters, err := asn1.Marshal(asn1.ObjectIdentifier{1, 2, 840, 10045, 3, 1, 7})  //prime256v1
         if err != nil {
                 panic(fmt.Errorf("Unable to encode parameter OID: %s", err))
@@ -196,17 +195,14 @@ func main() {
                 errors.New("x509: trailing data after ASN.1 of public-key")
         }
         // Parse the algo
-        //paramsData := pubKey.Algorithm.Parameters.FullBytes
-        //namedCurveOID := new(asn1.ObjectIdentifier)
-        //asn1.Unmarshal(paramsData, namedCurveOID)
+        paramsData := pubKey.Algorithm.Parameters.FullBytes
+        namedCurveOID := new(asn1.ObjectIdentifier)
+        asn1.Unmarshal(paramsData, namedCurveOID)
 
-       
         PublicKey:= getCompressedPubkey(pubKey.PublicKey.Bytes)
 
-        //fmt.Print(getTzPublicKey(&asn1.ObjectIdentifier{1, 2, 840, 10045, 3, 1, 7},generateKeyPairResponse.PubKey.Attributes[ep11.CKA_PUBLIC_KEY_INFO].GetAttributeB()))
-
-        fmt.Println(getTzPublicKey(&asn1.ObjectIdentifier{1, 2, 840, 10045, 3, 1, 7},PublicKey))
+        fmt.Println(getTzPublicKey(namedCurveOID,PublicKey))
  
-        fmt.Println(getTzPublicKeyHash(&asn1.ObjectIdentifier{1, 2, 840, 10045, 3, 1, 7},PublicKey))
+        fmt.Println(getTzPublicKeyHash(namedCurveOID,PublicKey))
 
 }
