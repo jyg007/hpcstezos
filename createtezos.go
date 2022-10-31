@@ -172,13 +172,6 @@ func main() {
 		panic(fmt.Errorf("GenerateKeyPair error: %s", err))
 	}
 
-        fsk,_ := os.Create("sk.hex")
-        fsk.Write([]byte(hex.EncodeToString(generateKeyPairResponse.PrivKey.KeyBlobs[0])))
-        defer fsk.Close()
-
-        f, _ :=os.Create("pubkey.der")
-        f.Write(generateKeyPairResponse.PubKey.Attributes[ep11.CKA_PUBLIC_KEY_INFO].GetAttributeB())
-        defer f.Close()
 
         //openssl ec -inform DER -in  pubkey.der -outform PEM -out pubkey.pem -pubin
 
@@ -202,7 +195,16 @@ func main() {
         PublicKey:= getCompressedPubkey(pubKey.PublicKey.Bytes)
 
         fmt.Println(getTzPublicKey(namedCurveOID,PublicKey))
- 
-        fmt.Println(getTzPublicKeyHash(namedCurveOID,PublicKey))
+
+        pkh:=getTzPublicKeyHash(namedCurveOID,PublicKey)
+        fmt.Println(pkh)
+
+        fsk,_ := os.Create(pkh+".sk.hex")
+        fsk.Write([]byte(hex.EncodeToString(generateKeyPairResponse.PrivKey.KeyBlobs[0])))
+        defer fsk.Close()
+
+        f, _ :=os.Create(pkh+".der")
+        f.Write(generateKeyPairResponse.PubKey.Attributes[ep11.CKA_PUBLIC_KEY_INFO].GetAttributeB())
+        defer f.Close()
 
 }
