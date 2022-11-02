@@ -1,6 +1,6 @@
-all: createtezos 
+all: createtezoskey
 
 deps = connect.go util.go
 
-createtezos: createtezos.go $(deps)
+createtezoskey: createtezoskey.go $(deps)
 	go build $^	
