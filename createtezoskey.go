@@ -34,11 +34,13 @@ func main() {
         var err error
         var ecParameters []byte
 
-        if (os.Args[1] == "tz3") {
-                ecParameters, err = asn1.Marshal(asn1.ObjectIdentifier{1, 2, 840, 10045, 3, 1, 7})  //prime256v1
-        }
-        if (os.Args[1] == "tz1") {
+        switch os.Args[1] {
+        case "tz3":
+                ecParameters, err = asn1.Marshal(asn1.ObjectIdentifier{1, 2, 840, 10045, 3, 1, 7})  //prime256v1 
+        case "tz1":
                 ecParameters, err = asn1.Marshal(asn1.ObjectIdentifier{1, 3, 101, 112})  //Ed25519
+        case "tz2":
+                ecParameters, err = asn1.Marshal(asn1.ObjectIdentifier{1, 3, 132, 0, 10})  //Secp256k1
         }
 
         if err != nil {
@@ -85,11 +87,14 @@ func main() {
         asn1.Unmarshal(paramsData, namedCurveOID)
 
         var PublicKey []byte
-        if (os.Args[1] == "tz3") {
+
+        switch os.Args[1] {
+        case "tz3":
                 PublicKey = getCompressedPubkey(pubKey.PublicKey.Bytes)
-        }
-        if (os.Args[1] == "tz1") {
+        case "tz1":
                 PublicKey = pubKey.PublicKey.Bytes
+        case "tz2":
+                PublicKey = getCompressedPubkey(pubKey.PublicKey.Bytes)
         }
         
         fmt.Println(getTzPublicKey(namedCurveOID,PublicKey))
