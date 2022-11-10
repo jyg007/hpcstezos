@@ -1,40 +1,35 @@
-Utilisation
------------
+# Utilisation
+
 
 -> require a hpcs grep11 service to connect to (config in credential.yaml)
 only support onprem .  I suggest to use native pkcs11 for IBM Cloud hpcs
 
-create the priv key in the HSM
-provide pub and tz signature.
+Create the priv key in the HSM.  Use the first parameter to specify the kind of tz key.
+```
+$ createtezoskey tz1
+000000000000000000000000000000000000000000000000000000000000000058b25ed705767b2729e96514ee97a6b300000000004001250000000000000001123409a90e60707b05d710fc9fe041aa91d1ca9609f5ad0ee7f20f6133b1c1ed0842e64f3db64b31ad089ef45b0f4216b37e1fe8d2ae689ab6ed33bd549fae1524e3d2f660313000b24d109cb43ff8d27023bd2f7ce8cb4526fe1b66086ab9e251306f0d083f7a76a963a8abce4b900f775730711b2a84018a7d8687ea0bb5de2a63fefe822f9788cc75aada2ed7dad935ef9db741341600c08242ab43dd9a21f40aa99b7ae12fa7ee677899f0191d8594724c4f39f75f0e22f8d06c0fbaaf67f41aff8df128153f08686df63db7549d3d49f619ac63f38def5028dcdf1a755eeab5f8c9cb72926c69b7eecab8c67614de8def755bbc19ad9e1965b69989b3a325a41252218988101edd7551b5322b75445e5463caba7a92e2908f7646ea1aa7657cac76aa2b34277c2f513bd3cdc093e75d7e8c2b087c107510cf95dbbeacdbc2406b432cd328350f708a92175f1c1bf1bd6b546622abd160dadb87f83c88960ff4e74b432ca08db28e5f3fad8e5627d138c4a15c01734642968246de7cae982676a766c327a058276c0856ac389334b47758e621a2041a6ad9958f4da1aa61c3d7ac93747c03d71367269f15a72233918c5988c125dfff42a4fa433ad7e0f0b7f70ed3210e50dbda31a594e183da6de4be0c732cf4ecce0571016a23724df0d68c622f2be9da1a3af8b3074763bc02c945b26340d4d7a020150177cc4d5e0321ba2f26ee6229a2a8a345cdf8635998abeb9329d363169e163dfd093d53595de6b13b20dd75d423f4a694a69130d313
 
-./createtezos 
-p2pk68MUzvc9TjFgGGakhAFfK8mU1Yy1ckBnjLe9anHVxdAVYWSW4zp
-tz3UNncZ71gZDqj81sgR9ep4XtFi4ACsFm2T
+edpkuNAzCD3GStoazVVQZ1Xb9yvREPTCh97jgcd5d6g1ekJn7Kzk6i
+tz1VqJrj8f5G9Z7eK8d2U5mXAs5oBXCsrJqc
 
-openssl ec -inform DER -in  pubkey.der -outform PEM -out pubkey.pem -pubin
-./key-encoder pubkey.pem 
-read EC key
-writing EC key
+```
+The first output is the secrek BLOB ciphered by the grep11 HSM service
+Then Tezos public and public hash
 
-key-encoder pubkey.pem    // gitlab.com/polychainlabs/key-encoder
-2022/10/29 11:34:14 Parsing:  pubkey.pem
-Curve:  Secp256r1: 1.2.840.10045.3.1.7
-Tezos Secret Key:  
-Tezos Public Key:  p2pk68MUzvc9TjFgGGakhAFfK8mU1Yy1ckBnjLe9anHVxdAVYWSW4zp
-Tezos Public Key Hash:  tz3UNncZ71gZDqj81sgR9ep4XtFi4ACsFm2T
+The DER public key is stored in a file as well as the secret key BLOB.
+
+```
+$ ls tz1VqJrj8f5G9Z7eK8d2U5mXAs5oBXCsrJqc*
+tz1VqJrj8f5G9Z7eK8d2U5mXAs5oBXCsrJqc.der  tz1VqJrj8f5G9Z7eK8d2U5mXAs5oBXCsrJqc.sk.hex
+```
+**IMPORTANT**
+Depending on the latest push, the key can be made EXTRACTABLE or non EXTRACTABLE.  Pay attention to this if you plan it for real use.
 
 
+# Installation:
 
-Installation:
--------------
-
+```
 go mod init
 go mod tidy
-
-
-Original procedure
-------------------
-
-createtezos
-openssl ec -inform DER -in  pubkey.der -outform PEM -out pubkey.pem -pubin
-key-encoder pubkey.pem 
+make
+```
