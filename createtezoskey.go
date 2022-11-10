@@ -89,12 +89,10 @@ func main() {
         var PublicKey []byte
 
         switch os.Args[1] {
-        case "tz3":
+        case "tz3","tz2":
                 PublicKey = getCompressedPubkey(pubKey.PublicKey.Bytes)
         case "tz1":
                 PublicKey = pubKey.PublicKey.Bytes
-        case "tz2":
-                PublicKey = getCompressedPubkey(pubKey.PublicKey.Bytes)
         }
         
         fmt.Println(getTzPublicKey(namedCurveOID,PublicKey))
