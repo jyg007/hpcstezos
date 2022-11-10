@@ -7,7 +7,6 @@ import(
     "github.com/btcsuite/btcutil/base58"
     "math/big"
     "golang.org/x/crypto/blake2b"
-
 )
 
 const (
@@ -54,7 +53,7 @@ func getTzPrefixBytes(algo *asn1.ObjectIdentifier) ([]byte, []byte, []byte) {
         } else if algo.Equal(oidPrivateKeyEd25519) {
                 pkh, _ := hex.DecodeString(tzEd25519PublicKeyHash)
                 pk, _ := hex.DecodeString(tzEd25519PublicKey)
-                sk, _ := hex.DecodeString(tzEd25519Secret)
+                sk, _ := hex.DecodeString(tzEd25519Seed)
                 return pkh, pk, sk
         }
         return nil, nil, nil
@@ -69,6 +68,7 @@ func b58CheckEncode(prefix []byte, bytes []byte) string {
         // Append first four of the hash
         finalMessage := append(message, h2[:4]...)
         // b58 encode the response
+
         encoded := base58.Encode(finalMessage)
         return encoded
 }
