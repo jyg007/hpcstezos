@@ -7,7 +7,7 @@ import (
 	"encoding/hex"
 
 	"hpcstezos/ep11"
-	pb "hpcstezos/grpc"
+	"hpcstezos/grpc"
 
 	"encoding/asn1"
 	"os"
@@ -24,7 +24,7 @@ type subjectPublicKeyInfo struct {
 }
 
 
-var cryptoClient pb.CryptoClient
+var cryptoClient grep11.CryptoClient
 
 func main() {
 
@@ -57,8 +57,8 @@ func main() {
 		ep11.CKA_SIGN:     true,
 		ep11.CKA_EXTRACTABLE: true,  // à changer pour la prod !
 	}
-	generateKeypairRequest := &pb.GenerateKeyPairRequest{
-		Mech:            &pb.Mechanism{Mechanism: ep11.CKM_EC_KEY_PAIR_GEN},
+	generateKeypairRequest := &grep11.GenerateKeyPairRequest{
+		Mech:            &grep11.Mechanism{Mechanism: ep11.CKM_EC_KEY_PAIR_GEN},
 		PubKeyTemplate:  AttributeMap(publicKeyTemplate),
 		PrivKeyTemplate: AttributeMap(privateKeyTemplate),
 	}
