@@ -18,6 +18,7 @@ import (
   "crypto/elliptic"
   "github.com/btcsuite/btcutil/base58"
   "math/big"
+  "github.com/decred/dcrd/dcrec/secp256k1"
 )
 
 var cryptoClient grep11.CryptoClient
@@ -46,7 +47,6 @@ type IBMPrivateKey struct {
 func main() {
 
 	// Input takes a b58 Tezos secret key
-
 	decoded , _ ,err := base58.CheckDecode(os.Args[1])  //version second argument
 
 	if err != nil {
@@ -67,40 +67,11 @@ func main() {
  		var asn1k []byte
  		var privKey pkcs8PrivateKey
 
-    	seed := decoded[3:]
-    	//prefix:=decoded[0:3]
+    seed := decoded[3:]
+    //prefix:=decoded[0:3]
 		//fmt.Printf("Decoded data: %x\n", seed)
  		
-		if (bytes.Equal([]byte(os.Args[1])[0:4],[]byte("p2sk"))) {
-			//fmt.Println("tz3")
-
-			priv := new(ecdsa.PrivateKey)
-			priv.PublicKey.Curve=elliptic.P256() 
-			priv.D = new(big.Int)
-			priv.D.SetBytes(seed)
-			priv.PublicKey.X, priv.PublicKey.Y = elliptic.P256().ScalarBaseMult(seed)
-			pk := elliptic.Marshal(elliptic.P256(),priv.PublicKey.X,priv.PublicKey.Y)
-
-			fmt.Println("Tezos Public Hash Key  :",getTzPublicKeyHash(&asn1.ObjectIdentifier{1, 2, 840, 10045, 3, 1, 7},getCompressedPubkey(pk)))
-			fmt.Println("Tezos Public Key       :",getTzPublicKey(&asn1.ObjectIdentifier{1, 2, 840, 10045, 3, 1, 7},getCompressedPubkey(pk)))			
-			
-			k := IBMPrivateKey{
-    			Version: 1,
-    			SK: seed,
-    			PK: asn1.BitString{Bytes: pk,BitLength: 8*len(pk)},    
-    		}
-    		asn1k,err = asn1.Marshal(k)
-    		if err != nil {
-	    		fmt.Print(err)
-	    		return
-	    	}
-	    	privKey = pkcs8PrivateKey{
-	    		Version: 0,
-	    		KeyType: ecKeyType{Algo: asn1.ObjectIdentifier{1, 2, 840, 10045, 2,1 }, Curve: asn1.ObjectIdentifier{1, 2, 840, 10045, 3, 1, 7} },
-				PrivateKey:    asn1k,
-			}
-
-		} else {
+		if bytes.Equal([]byte(os.Args[1])[0:4],[]byte("edsk")) {
 			//Assume this is a tz1 and a seed.  Could be wrong.  Test the len !
 			//fmt.Println("tz1")
 
@@ -126,12 +97,65 @@ func main() {
 	    		KeyType: ecKeyType{Algo: asn1.ObjectIdentifier{1, 2, 840, 10045, 2,1 }, Curve: asn1.ObjectIdentifier{1, 3, 101, 112} },
 				PrivateKey:    asn1k,
 			}
-		}    	
-  
-    	skBytes,err =asn1.Marshal(privKey)
-    	if err != nil {
-    		fmt.Print(err)
+		}  else if bytes.Equal([]byte(os.Args[1])[0:4],[]byte("p2sk")) 	{
+			//fmt.Println("tz3")
+
+			priv := new(ecdsa.PrivateKey)
+			priv.PublicKey.Curve=elliptic.P256() 
+			priv.D = new(big.Int)
+			priv.D.SetBytes(seed)
+			priv.PublicKey.X, priv.PublicKey.Y = elliptic.P256().ScalarBaseMult(seed)
+			pk := elliptic.Marshal(elliptic.P256(),priv.PublicKey.X,priv.PublicKey.Y)
+
+			fmt.Println("Tezos Public Hash Key  :",getTzPublicKeyHash(&asn1.ObjectIdentifier{1, 2, 840, 10045, 3, 1, 7},getCompressedPubkey(pk)))
+			fmt.Println("Tezos Public Key       :",getTzPublicKey(&asn1.ObjectIdentifier{1, 2, 840, 10045, 3, 1, 7},getCompressedPubkey(pk)))			
+			
+			k := IBMPrivateKey{
+    		Version: 1,
+    		SK: seed,
+    		PK: asn1.BitString{Bytes: pk,BitLength: 8*len(pk)},    
     	}
+    	asn1k,err = asn1.Marshal(k)
+    	if err != nil {
+	    	fmt.Println(err)
+	    	return
+	    }
+	    privKey = pkcs8PrivateKey{
+	    	Version: 0,
+	    	KeyType: ecKeyType{Algo: asn1.ObjectIdentifier{1, 2, 840, 10045, 2,1 }, Curve: asn1.ObjectIdentifier{1, 2, 840, 10045, 3, 1, 7} },
+				PrivateKey:    asn1k,
+			}
+
+		}  else if bytes.Equal([]byte(os.Args[1])[0:4],[]byte("spsk")) 	{
+			//fmt.Println("tz2")
+
+			_ , pk := secp256k1.PrivKeyFromBytes(seed)
+
+			fmt.Println("Tezos Public Hash Key  :",getTzPublicKeyHash(&asn1.ObjectIdentifier{1, 3, 132, 0, 10},pk.SerializeCompressed()))
+			fmt.Println("Tezos Public Key       :",getTzPublicKey(&asn1.ObjectIdentifier{1, 3, 132, 0, 10},pk.SerializeCompressed()))			
+			
+			k := IBMPrivateKey{
+    		Version: 1,
+    		SK: seed,
+    		PK: asn1.BitString{Bytes: pk.SerializeUncompressed(),BitLength: 8*len(pk.SerializeUncompressed())},    
+    	}
+    	asn1k,err = asn1.Marshal(k)
+    	if err != nil {
+	    	fmt.Print(err)
+	    	return
+	    }
+	    privKey = pkcs8PrivateKey{
+	    	Version: 0,
+	    	KeyType: ecKeyType{Algo: asn1.ObjectIdentifier{1, 2, 840, 10045, 2,1 }, Curve: asn1.ObjectIdentifier{1, 3, 132, 0, 10} },
+			  PrivateKey:    asn1k,
+			}
+
+		}  	
+  
+    skBytes,err =asn1.Marshal(privKey)
+    if err != nil {
+    	fmt.Print(err)
+    }
   //  }
     
     cryptoClient = getGrep11Server()
